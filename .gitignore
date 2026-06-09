@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+
+# Variáveis de ambiente
+.env
+.env.local
+
+# Saída gerada em runtime
+downloads/
+editais/
+licitacoes/
+boletins/
+requisições/
+data/filtros.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

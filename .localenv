@@ -1,0 +1,10 @@
+# Token de autenticação da API da Conlicitação
+CONLIC_API_TOKEN=seu_token_aqui
+
+# --- Com Docker (usar nomes dos serviços do docker-compose.yml) ---
+CELERY_BROKER_URL=pyamqp://guest:guest@rabbitmq:5672//
+CELERY_BACKEND_URL=redis://redis:6379/0
+
+# --- Sem Docker (usar localhost com as portas mapeadas) ---
+# CELERY_BROKER_URL=pyamqp://guest:guest@localhost:9972//
+# CELERY_BACKEND_URL=redis://127.0.0.1:9963/0

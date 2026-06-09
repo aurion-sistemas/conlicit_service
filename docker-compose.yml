@@ -1,0 +1,27 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-alpine
+    ports:
+      - "9972:5672"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "9963:6379"
+
+  worker-server:
+    build: .
+    command: celery -A workers.tasks worker --loglevel=info -n worker_server@%h -Q server_queue
+    env_file: .env
+    depends_on:
+      - rabbitmq
+      - redis
+
+  worker-local:
+    build: .
+    command: celery -A workers.tasks worker --loglevel=info -n worker_local@%h -Q local_queue
+    env_file: .env
+    depends_on:
+      - rabbitmq
+      - redis
