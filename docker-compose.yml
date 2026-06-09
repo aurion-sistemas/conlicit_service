@@ -14,6 +14,11 @@ services:
     build: .
     command: celery -A workers.tasks worker --loglevel=info -n worker_server@%h -Q server_queue
     env_file: .env
+    volumes:
+      - ../parseway/storage:/storage
+    networks:
+      - default
+      - aurion_net
     depends_on:
       - rabbitmq
       - redis
@@ -22,6 +27,15 @@ services:
     build: .
     command: celery -A workers.tasks worker --loglevel=info -n worker_local@%h -Q local_queue
     env_file: .env
+    volumes:
+      - ../parseway/storage:/storage
+    networks:
+      - default
+      - aurion_net
     depends_on:
       - rabbitmq
       - redis
+
+networks:
+  aurion_net:
+    external: true
