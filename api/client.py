@@ -141,33 +141,29 @@ class Conlic:
             print(f"Erro de conexão na busca pelos dados do boletim: {e}")
             return None
 
-    def obter_ultimo_boletim(self):
-        filtro_id = 78239
+    def obter_ultimo_boletim(self, filtro_id: int) -> list:
+        editais = []
         listaB = self.obter_lista_de_boletins(filtro_id)
         if listaB:
             boletim_id = listaB[0]["id"]
             boletim = self.buscar_boletim(boletim_id)
-            editais = []
             for lic in boletim["licitacoes"]:
                 for doc in lic["documento"]:
                     f_name, f_type = os.path.splitext(doc["filename"])
                     edit = {"id": lic["id"],
                             "type": f_type,
                             "filename": f_name,
-                            "url":self.DOMAIN+doc["url"]}
+                            "url": self.DOMAIN + doc["url"]}
                     editais.append(edit)
-            self.salvar_json(editais,f"downloads[{boletim["id"]}].json",self.PASTA_DOWNLOAD)
+            self.salvar_json(editais, f"downloads[{boletim['id']}].json", self.PASTA_DOWNLOAD)
         return editais
         
 
 
-if __name__ == "__main__":      
+if __name__ == "__main__":
     CL = Conlic()
-    CL.obter_ultimo_boletim()
-    # filtros = CL.obter_filtros(False)
-    # filtro_id = 78239
-    # Boletins = CL.obter_lista_de_boletins(filtro_id,3,False) # type: ignore
-    # for b in Boletins:
-    #     Dados = CL.buscar_boletim(b["id"],False) # type: ignore
+    filtros = CL.obter_filtros()
+    for f in (filtros or []):
+        CL.obter_ultimo_boletim(f["id"])
   
     

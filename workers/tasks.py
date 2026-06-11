@@ -1,4 +1,5 @@
 from celery import Celery, group, chord
+from celery.schedules import crontab
 import os
 import requests
 from pathlib import Path
@@ -8,7 +9,21 @@ app = Celery('tasks',
              broker=os.environ.get("CELERY_BROKER_URL"),
              backend=os.environ.get("CELERY_BACKEND_URL"))
 app.conf.enable_utc = True
-app.conf.timezone = 'UTC'
+app.conf.timezone = 'America/Sao_Paulo'
+app.conf.beat_schedule = {
+    'boletim-manha': {
+        'task': 'workers.tasks.executar_pipeline',
+        'schedule': crontab(hour=10, minute=0),
+    },
+    'boletim-tarde': {
+        'task': 'workers.tasks.executar_pipeline',
+        'schedule': crontab(hour=13, minute=15),
+    },
+    'boletim-noite': {
+        'task': 'workers.tasks.executar_pipeline',
+        'schedule': crontab(hour=18, minute=45),
+    },
+}
 
 PARSEWAY_INBOX_DIR = os.environ.get("PARSEWAY_INBOX_DIR", "/storage/inbox")
 PARSEWAY_URL = os.environ.get("PARSEWAY_URL", "http://licitacao-service:8003")
@@ -21,9 +36,17 @@ PARSEWAY_EQUIPMENT_JSON = os.environ.get("PARSEWAY_EQUIPMENT_JSON", "/storage/eq
 
 @app.task(queue='server_queue')
 def executar_pipeline():
-    """Ponto de entrada: busca editais da API e dispara downloads em paralelo."""
+    """Ponto de entrada: busca editais de todos os filtros e dispara downloads em paralelo."""
     CL = Conlic()
-    editais = CL.obter_ultimo_boletim()
+    filtros = CL.obter_filtros()
+
+    if not filtros:
+        print("[PIPELINE] Nenhum filtro encontrado.")
+        return "Nenhum filtro encontrado"
+
+    editais = []
+    for filtro in filtros:
+        editais.extend(CL.obter_ultimo_boletim(filtro["id"]))
 
     if not editais:
         print("[PIPELINE] Nenhum edital encontrado.")
@@ -40,9 +63,15 @@ def executar_pipeline():
 
 @app.task(queue='server_queue')
 def obter_links():
-    """Retorna a lista de editais do último boletim sem disparar o pipeline."""
+    """Retorna a lista de editais do último boletim de todos os filtros."""
     CL = Conlic()
-    return CL.obter_ultimo_boletim()
+    filtros = CL.obter_filtros()
+    if not filtros:
+        return []
+    editais = []
+    for filtro in filtros:
+        editais.extend(CL.obter_ultimo_boletim(filtro["id"]))
+    return editais
 
 
 # ==============================================================================

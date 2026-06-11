@@ -36,6 +36,17 @@ services:
       - rabbitmq
       - redis
 
+  celery-beat:
+    build: .
+    command: celery -A workers.tasks beat --loglevel=info
+    env_file: .env
+    networks:
+      - default
+      - aurion_net
+    depends_on:
+      - rabbitmq
+      - redis
+
 networks:
   aurion_net:
     external: true
